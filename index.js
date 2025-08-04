@@ -23,7 +23,17 @@ async function run() {
 
 
     const AllData = client.db("rosewood").collection("AllData");
+    const AllUser = client.db("rosewood").collection("AllUser");
 
+    app.post("/user", async(req,res)=>{
+        const body = req.body;
+        console.log(body,"----",body.email,body.password)
+        if(await AllUser.findOne({ email: body?.email })){
+          return
+        }
+        const result = await AllUser.insertOne(body);
+        res.send(result);
+    })
     app.post("/allData", async(req,res)=>{
         const body = req.body;
         const result = await AllData.insertOne(body);
