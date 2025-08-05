@@ -9,7 +9,7 @@ require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MONGO_URL}:${process.env.MONGO_PASS}@rosewood.euiuyee.mongodb.net/?retryWrites=true&w=majority&appName=rosewood`;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -24,6 +24,7 @@ async function run() {
 
     const AllData = client.db("rosewood").collection("AllData");
     const AllUser = client.db("rosewood").collection("AllUser");
+    const AllOrder = client.db("rosewood").collection("AllOrder");
 
     app.post("/user", async(req,res)=>{
         const body = req.body;
@@ -34,9 +35,20 @@ async function run() {
         const result = await AllUser.insertOne(body);
         res.send(result);
     })
+    app.get("/user/:email", async(req,res)=>{
+      const email = req.params.email;
+      const mil = {email : email}
+      const result =  await AllUser.findOne(mil)
+      res.send(result)
+    })
     app.post("/allData", async(req,res)=>{
         const body = req.body;
         const result = await AllData.insertOne(body);
+        res.send(result);
+    })
+    app.post("/order", async(req,res)=>{
+        const body = req.body;
+        const result = await AllOrder.insertOne(body);
         res.send(result);
     })
 
