@@ -50,14 +50,11 @@ async function run() {
     });
     app.get("/allData", async (req, res) => {
       try {
-        const {  sort = "desc" } = req.query;
-
-      
+        const { sort = "desc" } = req.query;
         const cursor = AllData.find().sort({
           price: sort === "asc" ? 1 : -1,
         });
         const result = await cursor.toArray();
-
         res.send(result);
       } catch (error) {
         console.error("Error fetching allData:", error);
