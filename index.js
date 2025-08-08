@@ -25,10 +25,39 @@ async function run() {
 
     app.post("/user", async (req, res) => {
       const body = req.body;
+      console.log(body);
       if (await AllUser.findOne({ email: body?.email })) {
         return;
       }
       const result = await AllUser.insertOne(body);
+      res.send(result);
+    });
+    app.get("/ordersAll", async (req, res) => {
+      const result = await AllOrder.find().sort({ orderTime: -1 }).toArray();
+      res.send(result);
+    });
+    app.patch("/ordersAll/:id", async (req, res) => {
+      const id = req.params.id;
+      const { status } = req.body;
+
+      const result = await AllOrder.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { orderStatus: status } }
+      );
+
+      res.send(result);
+    });
+
+    app.delete("/ordersAll/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id,"cdced")
+      const result = await AllOrder.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    app.get("/orderData/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await AllOrder.find({ email }).toArray();
       res.send(result);
     });
     app.get("/user/:email", async (req, res) => {
