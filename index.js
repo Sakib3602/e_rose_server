@@ -39,7 +39,7 @@ async function run() {
     app.patch("/ordersAll/:id", async (req, res) => {
       const id = req.params.id;
       const { status , doneDate } = req.body;
-      console.log(doneDate)
+    
 
       const result = await AllOrder.updateOne(
         { _id: new ObjectId(id) },
@@ -97,6 +97,13 @@ async function run() {
       const id = req.params.id;
       const da = { _id: new ObjectId(id) };
       const result = await AllData.findOne(da);
+      res.send(result);
+    });
+    app.delete("/allData/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id)
+      const da = { _id: new ObjectId(id) };
+      const result = await AllData.deleteOne(da);
       res.send(result);
     });
 
