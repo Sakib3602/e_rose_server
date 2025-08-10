@@ -38,11 +38,13 @@ async function run() {
     });
     app.patch("/ordersAll/:id", async (req, res) => {
       const id = req.params.id;
-      const { status } = req.body;
+      const { status , doneDate } = req.body;
+      console.log(doneDate)
 
       const result = await AllOrder.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { orderStatus: status } }
+        { $set: { orderStatus: status , doneDate: doneDate  } },
+        
       );
 
       res.send(result);
