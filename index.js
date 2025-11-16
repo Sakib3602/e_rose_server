@@ -39,9 +39,10 @@ async function run() {
         tran_id: txid,
         product_category : "Clothes",
         emi_option : 0,
-        success_url: "http://localhost:3000/payment/success",
-        fail_url: "http://localhost:3000/payment/fail",
-        cancel_url: "http://localhost:3000/payment/cancel",
+        
+        success_url: `${process.env.BACKEND_URL}/payment/success`,
+        fail_url: `${process.env.BACKEND_URL}/payment/fail`,
+        cancel_url: `${process.env.BACKEND_URL}/payment/cancel`,
 
         cus_name: req.body.name,
         cus_email: req.body.email,
@@ -118,7 +119,7 @@ async function run() {
           console.log("No tran_id found in callback; cannot update order status.");
         }
 
-        res.redirect( "http://localhost:5173/success");
+        res.redirect( "https://rosewd.netlify.app/success");
       } catch (err) {
         console.error("Error in /payment/success:", err);
         res.status(500).send("error");
@@ -126,10 +127,10 @@ async function run() {
     });
 
     app.post("/payment/fail", async (req, res) => {
-      res.redirect( "http://localhost:5173/fail");
+      res.redirect( "https://rosewd.netlify.app/fail");
     });
     app.post("/payment/cancel", async (req, res) => {
-      res.redirect( "http://localhost:5173/cancel");
+      res.redirect( "https://rosewd.netlify.app/cancel");
     });
 
     //  ssl end
