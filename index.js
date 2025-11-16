@@ -24,7 +24,7 @@ async function run() {
     const AllData = client.db("rosewood").collection("AllData");
     const AllUser = client.db("rosewood").collection("AllUser");
     const AllOrder = client.db("rosewood").collection("AllOrder");
-    const BACKEND_URL = (process.env.BACKEND_URL || `http://localhost:${port}`).replace(/\/$/, "");
+    const BACKEND_URL = (process.env.BACKEND_URL).replace(/\/$/, "");
 
     // ssl start
 
