@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 const cors = require("cors");
+const axios = require("axios");
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -23,6 +25,114 @@ async function run() {
     const AllUser = client.db("rosewood").collection("AllUser");
     const AllOrder = client.db("rosewood").collection("AllOrder");
 
+    // ssl start
+
+    app.post("/initialpayment", async (req, res) => {
+      
+
+      const txid = new ObjectId().toString();
+      const data = {
+        store_id: process.env.SSL_ID,
+        store_passwd: process.env.SSL_PASS,
+        total_amount: req.body.totalTaka,
+        currency: "BDT",
+        tran_id: txid,
+        product_category : "Clothes",
+        emi_option : 0,
+        success_url: "http://localhost:3000/payment/success",
+        fail_url: "http://localhost:3000/payment/fail",
+        cancel_url: "http://localhost:3000/payment/cancel",
+
+        cus_name: req.body.name,
+        cus_email: req.body.email,
+        cus_add1: req.body.district,
+        cus_add2: req.body.division,
+        cus_city: "Dhaka",
+        cus_state: "Dhaka",
+        cus_postcode: "1000",
+        cus_country: "Bangladesh",
+        cus_phone: req.body.userNumber,
+        cus_fax: "01711111111",
+
+        shipping_method : "Home Delivery",
+        ship_name: "All in one",
+        ship_add1: "Dhaka",
+        ship_add2: "Dhaka",
+        ship_city: "Dhaka",
+        ship_state: "Dhaka",
+        ship_postcode: "1000",
+        ship_country: "Bangladesh",
+
+        num_of_item: 1,
+        weight_of_items :  2.00,
+        product_name : "Clothes",
+        product_profile : "general",
+        multi_card_name: "mastercard,visacard,amexcard",
+
+        value_a: "ref001_A",
+        value_b: "ref002_B",
+        value_c: "ref003_C",
+        value_d: "ref004_D",
+      };
+
+      const resp = await axios({
+        method: "post",
+        url: "https://sandbox.sslcommerz.com/gwprocess/v4/api.php",
+        data: new URLSearchParams(data).toString(),
+        headers:{
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      })
+
+      const up = await AllOrder.updateMany(
+        { _id: new ObjectId(req.body.orderId) },
+        { $set: { transactionId: txid, orderStatus: "Pending" } }
+      );
+
+
+
+
+      res.send({
+        paymentUrl: resp.data.GatewayPageURL,
+      })
+
+
+
+
+    });
+
+    app.post("/payment/success", async (req, res) => {
+      try {
+        
+
+        // Try to find tran_id that the gateway posts back. Check body first, then query.
+        const tranId = req.body?.tran_id || req.query?.tran_id || req.body?.tran_id;
+
+        if (tranId) {
+          const updateRes = await AllOrder.updateOne(
+            { transactionId: tranId },
+            { $set: { orderStatus: "Paid", paymentDetails: req.body, paidAt: new Date() } }
+          );
+          console.log("Updated order for tran_id", tranId, updateRes.modifiedCount);
+        } else {
+          console.log("No tran_id found in callback; cannot update order status.");
+        }
+
+        res.redirect( "http://localhost:5173/success");
+      } catch (err) {
+        console.error("Error in /payment/success:", err);
+        res.status(500).send("error");
+      }
+    });
+
+    app.post("/payment/fail", async (req, res) => {
+      res.redirect( "http://localhost:5173/fail");
+    });
+    app.post("/payment/cancel", async (req, res) => {
+      res.redirect( "http://localhost:5173/cancel");
+    });
+
+    //  ssl end
     app.post("/user", async (req, res) => {
       const body = req.body;
       console.log(body);
@@ -38,13 +148,11 @@ async function run() {
     });
     app.patch("/ordersAll/:id", async (req, res) => {
       const id = req.params.id;
-      const { status , doneDate } = req.body;
-    
+      const { status, doneDate } = req.body;
 
       const result = await AllOrder.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { orderStatus: status , doneDate: doneDate  } },
-        
+        { $set: { orderStatus: status, doneDate: doneDate } }
       );
 
       res.send(result);
@@ -52,7 +160,7 @@ async function run() {
 
     app.delete("/ordersAll/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id,"cdced")
+      console.log(id, "cdced");
       const result = await AllOrder.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
@@ -101,7 +209,7 @@ async function run() {
     });
     app.delete("/allData/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id)
+      console.log(id);
       const da = { _id: new ObjectId(id) };
       const result = await AllData.deleteOne(da);
       res.send(result);
