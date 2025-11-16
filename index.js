@@ -24,6 +24,7 @@ async function run() {
     const AllData = client.db("rosewood").collection("AllData");
     const AllUser = client.db("rosewood").collection("AllUser");
     const AllOrder = client.db("rosewood").collection("AllOrder");
+    const BACKEND_URL = (process.env.BACKEND_URL || `http://localhost:${port}`).replace(/\/$/, "");
 
     // ssl start
 
@@ -40,9 +41,9 @@ async function run() {
         product_category : "Clothes",
         emi_option : 0,
         
-        success_url: `${process.env.BACKEND_URL}/payment/success`,
-        fail_url: `${process.env.BACKEND_URL}/payment/fail`,
-        cancel_url: `${process.env.BACKEND_URL}/payment/cancel`,
+        success_url: `${BACKEND_URL}/payment/success`,
+        fail_url: `${BACKEND_URL}/payment/fail`,
+        cancel_url: `${BACKEND_URL}/payment/cancel`,
 
         cus_name: req.body.name,
         cus_email: req.body.email,
